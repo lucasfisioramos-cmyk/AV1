@@ -1,0 +1,17 @@
+data/
+data_test/
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+dist/
+build/
+.tsbuildinfo
+.env
+.DS_Store
+Thumbs.db
+*json.enc
+*tmp
+*.log
+*.bak
