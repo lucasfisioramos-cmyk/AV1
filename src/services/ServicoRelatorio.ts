@@ -1,9 +1,9 @@
 // src/services/ServicoRelatorio.ts
 import * as fs from 'fs';
 import * as path from 'path';
-import { RepositorioArquivo } from '../persistence/RepositorioArquivo';
-import { Lote, Organizacao, Equipamento } from '../domain/Entities';
-import { StatusRastreamento } from '../domain/Enums';
+import { RepositorioArquivo } from '../persistence/RepositorioArquivo.js';
+import { Lote, Organizacao, Equipamento } from '../domain/Entities.js';
+//import { StatusRastreamento } from '../domain/Enums';
 
 export class ServicoRelatorio {
   private repo: RepositorioArquivo;
@@ -83,7 +83,7 @@ export class ServicoRelatorio {
     const ultimasLinhas = linhas.slice(-limite);
 
     let output = `\n=== ÚLTIMAS ${ultimasLinhas.length} TRANSAÇÕES REGISTRADAS (JOURNAL) ===\n`;
-    ultimasLinhas.forEach((linha) => {
+    ultimasLinhas.forEach((linha: string) => {
       try {
         const item = JSON.parse(linha);
         output += `[${new Date(item.timestamp).toLocaleString()}] OP: ${item.operacao} | Entidade: ${item.entidade} | Resp: ${item.usuarioResponsavel}\n`;

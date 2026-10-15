@@ -1,8 +1,8 @@
 // src/services/ServicoOrganizacao.ts
-import { Organizacao, Contrato } from '../domain/Entities';
-import { RepositorioArquivo } from '../persistence/RepositorioArquivo';
-import { JournalTransacaoService } from '../persistence/JournalTransacao';
-import { ValidadorCNPJ } from '../validators/Validator';
+import { Organizacao, Contrato } from '../domain/Entities.js';
+import { RepositorioArquivo } from '../persistence/RepositorioArquivo.js';
+import { JournalTransacaoService } from '../persistence/JournalTransacao.js';
+import { ValidadorCNPJ } from '../validators/Validator.js';
 
 export class ServicoOrganizacao {
   private repo: RepositorioArquivo;

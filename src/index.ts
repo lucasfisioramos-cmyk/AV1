@@ -1,12 +1,12 @@
-import { RepositorioArquivo } from './persistence/RepositorioArquivo';
-import { JournalTransacaoService } from './persistence/JournalTransacao';
-import { ServicoProvisionamento } from './services/ServicoProvisionamento';
-import { ServicoAutenticacao } from './services/ServicoAutenticacao';
-import { ServicoOrganizacao } from './services/ServicoOrganizacao';
-import { ServicoLoteEquipamento } from './services/ServicoLoteEquipamento';
-import { ServicoUsuario } from './services/ServicoUsuario';
-import { ServicoRelatorio } from './services/ServicoRelatorio';
-import { CLIInterface } from './cli/CLIInterface';
+import { RepositorioArquivo } from './persistence/RepositorioArquivo.js';
+import { JournalTransacaoService } from './persistence/JournalTransacao.js';
+import { ServicoProvisionamento } from './services/ServicoProvisionamento.js';
+import { ServicoAutenticacao } from './services/ServicoAutenticacao.js';
+import { ServicoOrganizacao } from './services/ServicoOrganizacao.js';
+import { ServicoLoteEquipamento } from './services/ServicoLoteEquipamento.js';
+import { ServicoUsuario } from './services/ServicoUsuario.js';
+import { ServicoRelatorio } from './services/ServicoRelatorio.js';
+import { CLIInterface } from './cli/CLIInterface.js';
 
 const DATA_DIR = './data';
 

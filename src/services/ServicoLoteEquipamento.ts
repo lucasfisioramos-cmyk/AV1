@@ -1,9 +1,9 @@
 // src/services/ServicoLoteEquipamento.ts
-import { Lote, Equipamento, Movimentacao } from '../domain/Entities';
-import { StatusLote, TipoEquipamento, EstadoFisico, StatusRastreamento } from '../domain/Enums';
-import { RepositorioArquivo } from '../persistence/RepositorioArquivo';
-import { JournalTransacaoService } from '../persistence/JournalTransacao';
-import { ValidadorDataEntrada } from '../validators/Validator';
+import { Lote, Equipamento, Movimentacao } from '../domain/Entities.js';
+import { StatusLote, TipoEquipamento, EstadoFisico, StatusRastreamento } from '../domain/Enums.js';
+import { RepositorioArquivo } from '../persistence/RepositorioArquivo.js';
+import { JournalTransacaoService } from '../persistence/JournalTransacao.js';
+import { ValidadorDataEntrada } from '../validators/Validator.js';
 
 export class ServicoLoteEquipamento {
   private repo: RepositorioArquivo;

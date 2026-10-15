@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { CriptografiaArquivo } from '../security/CriptografiaArquivo';
+import { CriptografiaArquivo } from '../security/CriptografiaArquivo.js';
 
 export class RepositorioArquivo {
   private diretorioBase: string;

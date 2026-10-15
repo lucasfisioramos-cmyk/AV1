@@ -1,12 +1,12 @@
 import * as readline from 'readline';
-import { ServicoAutenticacao } from '../services/ServicoAutenticacao';
-import { ServicoOrganizacao } from '../services/ServicoOrganizacao';
-import { ServicoLoteEquipamento } from '../services/ServicoLoteEquipamento';
-import { ServicoUsuario } from '../services/ServicoUsuario';
-import { ServicoRelatorio } from '../services/ServicoRelatorio';
-import { CommandParser } from './CommandParser';
-import { PapelUsuario, TipoEquipamento, EstadoFisico, StatusRastreamento } from '../domain/Enums';
-import { Sessao } from '../domain/Entities';
+import { ServicoAutenticacao } from '../services/ServicoAutenticacao.js';
+import { ServicoOrganizacao } from '../services/ServicoOrganizacao.js';
+import { ServicoLoteEquipamento } from '../services/ServicoLoteEquipamento.js';
+import { ServicoUsuario } from '../services/ServicoUsuario.js';
+import { ServicoRelatorio } from '../services/ServicoRelatorio.js';
+import { CommandParser } from './CommandParser.js';
+import { PapelUsuario, TipoEquipamento, EstadoFisico, StatusRastreamento } from '../domain/Enums.js';
+import { Sessao } from '../domain/Entities.js';
 
 export class CLIInterface {
   private autenticacao: ServicoAutenticacao;

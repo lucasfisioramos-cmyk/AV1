@@ -1,10 +1,10 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { CriptografiaArquivo } from '../security/CriptografiaArquivo';
-import { RepositorioArquivo } from '../persistence/RepositorioArquivo';
-import { JournalTransacaoService } from '../persistence/JournalTransacao';
-import { PapelUsuario } from '../domain/Enums';
-import { Credencial, ConfiguracaoMestre } from '../domain/Entities';
+import { CriptografiaArquivo } from '../security/CriptografiaArquivo.js';
+import { RepositorioArquivo } from '../persistence/RepositorioArquivo.js';
+import { JournalTransacaoService } from '../persistence/JournalTransacao.js';
+import { PapelUsuario } from '../domain/Enums.js';
+import { Credencial, ConfiguracaoMestre } from '../domain/Entities.js';
 
 export class ServicoProvisionamento {
   private dataDir: string;

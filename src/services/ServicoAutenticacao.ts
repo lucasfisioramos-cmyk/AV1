@@ -1,8 +1,8 @@
-import { Credencial, Sessao } from '../domain/Entities';
-import { PapelUsuario } from '../domain/Enums';
-import { CriptografiaArquivo } from '../security/CriptografiaArquivo';
-import { RepositorioArquivo } from '../persistence/RepositorioArquivo';
-import { JournalTransacaoService } from '../persistence/JournalTransacao';
+import { Credencial, Sessao } from '../domain/Entities.js';
+import { PapelUsuario } from '../domain/Enums.js';
+import { CriptografiaArquivo } from '../security/CriptografiaArquivo.js';
+import { RepositorioArquivo } from '../persistence/RepositorioArquivo.js';
+import { JournalTransacaoService } from '../persistence/JournalTransacao.js';
 
 export class ServicoAutenticacao {
   private repo: RepositorioArquivo;

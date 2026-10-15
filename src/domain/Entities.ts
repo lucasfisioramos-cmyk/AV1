@@ -1,4 +1,4 @@
-import { PapelUsuario, StatusLote, TipoEquipamento, EstadoFisico, StatusRastreamento } from './Enums';
+import { PapelUsuario, StatusLote, TipoEquipamento, EstadoFisico, StatusRastreamento } from './Enums.js';
 
 export interface Credencial {
   usuario: string;

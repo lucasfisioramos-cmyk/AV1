@@ -1,9 +1,8 @@
-// src/services/ServicoUsuario.ts
-import { Credencial } from '../domain/Entities';
-import { PapelUsuario } from '../domain/Enums';
-import { RepositorioArquivo } from '../persistence/RepositorioArquivo';
-import { JournalTransacaoService } from '../persistence/JournalTransacao';
-import { CriptografiaArquivo } from '../security/CriptografiaArquivo';
+import { Credencial } from '../domain/Entities.js';
+import { PapelUsuario } from '../domain/Enums.js';
+import { RepositorioArquivo } from '../persistence/RepositorioArquivo.js';
+import { JournalTransacaoService } from '../persistence/JournalTransacao.js';
+import { CriptografiaArquivo } from '../security/CriptografiaArquivo.js';
 
 export class ServicoUsuario {
   private repo: RepositorioArquivo;
