@@ -54,7 +54,7 @@ export class ServicoProvisionamento {
 
     repo.salvarEntidade('credenciais', [adminCredencial]);
 
-    // 4. Gravar no Journal de Transações (RNF04)
+    // 4. Gravar no Journal de Transações
     journal.registrar({
       operacao: 'PROVISIONAMENTO_INICIAL',
       entidade: 'Configuracao',

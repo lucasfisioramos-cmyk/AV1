@@ -1,5 +1,5 @@
 import { Credencial, Sessao } from '../domain/Entities.js';
-import { PapelUsuario } from '../domain/Enums.js';
+// import { PapelUsuario } from '../domain/Enums.js';
 import { CriptografiaArquivo } from '../security/CriptografiaArquivo.js';
 import { RepositorioArquivo } from '../persistence/RepositorioArquivo.js';
 import { JournalTransacaoService } from '../persistence/JournalTransacao.js';
@@ -8,7 +8,7 @@ export class ServicoAutenticacao {
   private repo: RepositorioArquivo;
   private journal: JournalTransacaoService;
   private readonly NOME_ARQUIVO = 'credenciais';
-  private readonly TEMPO_EXPIRACAO_MINUTOS = 30; // 30 min inatividade (RF02)
+  private readonly TEMPO_EXPIRACAO_MINUTOS = 30; // 30 min inatividade
 
   constructor(repo: RepositorioArquivo, journal: JournalTransacaoService) {
     this.repo = repo;
@@ -24,7 +24,6 @@ export class ServicoAutenticacao {
     const hashCalculado = CriptografiaArquivo.gerarHashSenha(senhaInput, cred.salt);
     if (hashCalculado !== cred.hashSenha) return null;
 
-    // Criar Sessão
     const agora = new Date();
     const expiracao = new Date(agora.getTime() + this.TEMPO_EXPIRACAO_MINUTOS * 60 * 1000);
 
@@ -34,6 +33,7 @@ export class ServicoAutenticacao {
       papel: cred.papel,
       criacao: agora.toISOString(),
       expiracao: expiracao.toISOString(),
+      ativa: true,
     };
 
     this.journal.registrar({
@@ -44,6 +44,27 @@ export class ServicoAutenticacao {
 
     return sessao;
   }
+
+public logout(sessao: Sessao): void {
+  if (!sessao) {
+    throw new Error('Sessão inválida ou não fornecida.');
+  }
+
+
+  if (sessao.ativa === false) {
+    throw new Error('A sessão informada já está inativa.');
+  }
+
+  sessao.ativa = false;
+
+  this.journal.registrar({
+    operacao: 'LOGOUT',
+    entidade: 'Sessao',
+    dadosAntes: { usuario: sessao.usuario, ativa: true },
+    dadosDepois: { usuario: sessao.usuario, ativa: false },
+    usuarioResponsavel: sessao.usuario,
+  });
+}
 
   public isSessaoValida(sessao: Sessao): boolean {
     const agora = new Date();

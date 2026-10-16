@@ -1,4 +1,3 @@
-// src/services/ServicoLoteEquipamento.ts
 import { Lote, Equipamento, Movimentacao } from '../domain/Entities.js';
 import { StatusLote, TipoEquipamento, EstadoFisico, StatusRastreamento } from '../domain/Enums.js';
 import { RepositorioArquivo } from '../persistence/RepositorioArquivo.js';
@@ -116,7 +115,7 @@ export class ServicoLoteEquipamento {
 
     if (!equipAchado) throw new Error('Equipamento não encontrado.');
 
-    // Regra RF06: Desmonte exige triagem prévia realizada
+    // Desmonte exige triagem prévia realizada
     if (
       (novoStatus === StatusRastreamento.EM_DESMONTE || novoStatus === StatusRastreamento.AGUARDANDO_DESMONTE) &&
       equipAchado.statusRastreamento === StatusRastreamento.AGUARDANDO_TRIAGEM

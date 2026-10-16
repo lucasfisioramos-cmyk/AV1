@@ -1,4 +1,3 @@
-// src/services/ServicoOrganizacao.ts
 import { Organizacao, Contrato } from '../domain/Entities.js';
 import { RepositorioArquivo } from '../persistence/RepositorioArquivo.js';
 import { JournalTransacaoService } from '../persistence/JournalTransacao.js';

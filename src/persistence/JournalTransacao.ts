@@ -13,7 +13,7 @@ export interface EntradaJournal {
 
 export class JournalTransacaoService {
   private arquivoJournal: string;
-  private readonly TAMANHO_MAXIMO_BYTES = 10 * 1024 * 1024; // 10 MB (RF09)
+  private readonly TAMANHO_MAXIMO_BYTES = 10 * 1024 * 1024; // 10 MB
 
   constructor(diretorioBase: string = './data') {
     if (!fs.existsSync(diretorioBase)) {

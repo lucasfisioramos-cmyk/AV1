@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { RepositorioArquivo } from '../persistence/RepositorioArquivo.js';
 import { Lote, Organizacao, Equipamento } from '../domain/Entities.js';
-//import { StatusRastreamento } from '../domain/Enums';
+import { StatusRastreamento } from '../domain/Enums.js';
 
 export class ServicoRelatorio {
   private repo: RepositorioArquivo;

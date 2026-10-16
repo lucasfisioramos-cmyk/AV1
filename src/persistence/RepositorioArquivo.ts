@@ -15,9 +15,6 @@ export class RepositorioArquivo {
     }
   }
 
-  /**
-   * Salva entidade de forma atômica utilizando arquivo temporário (RNF03)
-   */
   public salvarEntidade(nomeArquivo: string, dados: any): void {
     const caminhoFinal = path.join(this.diretorioBase, `${nomeArquivo}.json.enc`);
     const caminhoTemp = path.join(this.diretorioBase, `${nomeArquivo}.${Date.now()}.tmp`);

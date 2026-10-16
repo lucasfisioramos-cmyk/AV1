@@ -1,14 +1,14 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { CriptografiaArquivo } from '../security/CriptografiaArquivo';
-import { RepositorioArquivo } from '../persistence/RepositorioArquivo';
-import { JournalTransacaoService } from '../persistence/JournalTransacao';
-import { ServicoAutenticacao } from '../services/ServicoAutenticacao';
-import { ServicoOrganizacao } from '../services/ServicoOrganizacao';
-import { ServicoLoteEquipamento } from '../services/ServicoLoteEquipamento';
-import { ServicoRelatorio } from '../services/ServicoRelatorio';
-import { PapelUsuario, TipoEquipamento, EstadoFisico, StatusRastreamento } from '../domain/Enums';
-import { Credencial } from '../domain/Entities';
+import { CriptografiaArquivo } from '../security/CriptografiaArquivo.js';
+import { RepositorioArquivo } from '../persistence/RepositorioArquivo.js';
+import { JournalTransacaoService } from '../persistence/JournalTransacao.js';
+import { ServicoAutenticacao } from '../services/ServicoAutenticacao.js';
+import { ServicoOrganizacao } from '../services/ServicoOrganizacao.js';
+import { ServicoLoteEquipamento } from '../services/ServicoLoteEquipamento.js';
+import { ServicoRelatorio } from '../services/ServicoRelatorio.js';
+import { PapelUsuario, TipoEquipamento, EstadoFisico, StatusRastreamento } from '../domain/Enums.js';
+import { Credencial } from '../domain/Entities.js';
 
 const TEST_DIR = './data_test';
 const CONFIG_FILE = path.join(TEST_DIR, 'config.json.enc');

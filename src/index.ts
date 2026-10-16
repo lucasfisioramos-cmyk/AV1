@@ -40,7 +40,6 @@ async function main() {
   // 2. Instanciação da Infraestrutura e Serviços
   const journal = new JournalTransacaoService(DATA_DIR);
   const repo = new RepositorioArquivo(DATA_DIR, chaveMestra);
-
   const authService = new ServicoAutenticacao(repo, journal);
   const orgService = new ServicoOrganizacao(repo, journal);
   const loteService = new ServicoLoteEquipamento(repo, journal);

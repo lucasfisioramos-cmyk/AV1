@@ -4,7 +4,7 @@ export class CriptografiaArquivo {
   private static readonly ALGORITHM = 'aes-256-cbc';
 
   /**
-   * Cifra o conteúdo utilizando AES-256-CBC (RNF02)
+   * Cifra o conteúdo utilizando AES-256-CBC
    */
   public static cifrar(dados: string, chave: string): string {
     const iv = crypto.randomBytes(16);
@@ -18,7 +18,7 @@ export class CriptografiaArquivo {
   }
 
   /**
-   * Decifra dados em AES-256-CBC (RNF02)
+   * Decifra dados em AES-256-CBC
    */
   public static decifrar(dadosCifrados: string, chave: string): string {
     const [ivHex, encryptedText] = dadosCifrados.split(':');
@@ -37,7 +37,7 @@ export class CriptografiaArquivo {
   }
 
   /**
-   * Gera o hash SHA-256 com Salt para senhas (RF02)
+   * Gera o hash SHA-256 com Salt para senhas
    */
   public static gerarHashSenha(senha: string, salt: string): string {
     return crypto.createHash('sha256').update(senha + salt).digest('hex');

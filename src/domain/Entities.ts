@@ -14,6 +14,7 @@ export interface Sessao {
   papel: PapelUsuario;
   criacao: string;
   expiracao: string;
+  ativa?: boolean; 
 }
 
 export interface Contrato {
