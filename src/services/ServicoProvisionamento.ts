@@ -40,7 +40,7 @@ export class ServicoProvisionamento {
     fs.writeFileSync(this.configFile, JSON.stringify(configData, null, 2), 'utf8');
 
     // 2. Instanciar persistência e journal temporários
-    const journal = new JournalTransacaoService(this.dataDir);
+    const journal = new JournalTransacaoService(chaveMestra, this.dataDir);
     const repo = new RepositorioArquivo(this.dataDir, chaveMestra);
 
     // 3. Criar Credencial Inicial do Administrador com SHA-256 + Salt

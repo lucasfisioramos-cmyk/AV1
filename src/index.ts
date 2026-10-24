@@ -1,61 +1,82 @@
+import * as path from 'path';
+import * as fs from 'fs';
+import * as readline from 'readline';
+
+import { ServicoProvisionamento } from './services/ServicoProvisionamento.js';
 import { RepositorioArquivo } from './persistence/RepositorioArquivo.js';
 import { JournalTransacaoService } from './persistence/JournalTransacao.js';
-import { ServicoProvisionamento } from './services/ServicoProvisionamento.js';
 import { ServicoAutenticacao } from './services/ServicoAutenticacao.js';
+import { ServicoUsuario } from './services/ServicoUsuario.js';
 import { ServicoOrganizacao } from './services/ServicoOrganizacao.js';
 import { ServicoLoteEquipamento } from './services/ServicoLoteEquipamento.js';
-import { ServicoUsuario } from './services/ServicoUsuario.js';
 import { ServicoRelatorio } from './services/ServicoRelatorio.js';
 import { CLIInterface } from './cli/CLIInterface.js';
+import { CriptografiaArquivo } from './security/CriptografiaArquivo.js';
 
-const DATA_DIR = './data';
+async function bootstrap() {
+  console.log('==================================================');
+  console.log('       GREENCODE - LOGÍSTICA REVERSA EEE        ');
+  console.log('==================================================\n');
 
-async function main() {
-  console.log('==============================================');
-  console.log('       GREENCODE - LOGÍSTICA REVERSA CLI      ');
-  console.log('==============================================');
+  const diretorioDados = path.resolve('./data');
+  if (!fs.existsSync(diretorioDados)) {
+    fs.mkdirSync(diretorioDados, { recursive: true });
+  }
 
-  // 1. Boot de Provisionamento
-  const provisionamento = new ServicoProvisionamento(DATA_DIR);
+  // 1. Instancia o Serviço de Provisionamento
+  const servicoProvisionamento = new ServicoProvisionamento(diretorioDados);
   let chaveMestra: string;
 
-  if (provisionamento.precisaProvisionar()) {
-    console.log('\n[PROVISIONAMENTO INICIAL DETECTADO]');
-    const readline = require('readline').createInterface({
+  // 2. Verifica se precisa de provisionamento inicial
+  if (servicoProvisionamento.precisaProvisionar()) {
+    console.log('--- PROVISIONAMENTO INICIAL DO SISTEMA ---');
+    console.log('Nenhuma chave mestra encontrada. Configurando administrador inicial...\n');
+
+    const rl = readline.createInterface({
       input: process.stdin,
       output: process.stdout,
     });
-    const senhaAdmin = await new Promise<string>((res) =>
-      readline.question('Defina a senha do ADMINISTRADOR inicial: ', res)
-    );
-    readline.close();
 
-    const resultado = provisionamento.executarProvisionamento(senhaAdmin);
+    const pergunta = (query: string): Promise<string> =>
+      new Promise((resolve) => rl.question(query, resolve));
+
+    const senhaAdmin = await pergunta('Defina a senha do Administrador Inicial (admin): ');
+    rl.close();
+
+    const resultado = servicoProvisionamento.executarProvisionamento(senhaAdmin);
     chaveMestra = resultado.chaveMestra;
-    console.log('✔ Provisionamento concluído! Usuário inicial: "admin"\n');
+
+    console.log('\n✔ Provisionamento concluído com sucesso!\n');
   } else {
-    chaveMestra = provisionamento.carregarChaveMestra();
+    // Sistema já provisionado: apenas carrega a chave mestra existente
+    chaveMestra = servicoProvisionamento.carregarChaveMestra();
   }
 
-  // 2. Instanciação da Infraestrutura e Serviços
-  const journal = new JournalTransacaoService(DATA_DIR);
-  const repo = new RepositorioArquivo(DATA_DIR, chaveMestra);
-  const authService = new ServicoAutenticacao(repo, journal);
-  const orgService = new ServicoOrganizacao(repo, journal);
-  const loteService = new ServicoLoteEquipamento(repo, journal);
-  const usuarioService = new ServicoUsuario(repo, journal);
-  const relatorioService = new ServicoRelatorio(repo, DATA_DIR);
+  // 3. Camada de Persistência e Auditoria
+  const repositorio = new RepositorioArquivo(diretorioDados, chaveMestra);
+  const journal = new JournalTransacaoService(chaveMestra, diretorioDados);
 
-  // 3. Inicia a Camada de Apresentação
+  // 4. Instancia os Serviços de Domínio
+  const servicoAutenticacao = new ServicoAutenticacao(repositorio, journal);
+  const servicoUsuario = new ServicoUsuario(repositorio, journal);
+  const servicoOrganizacao = new ServicoOrganizacao(repositorio, journal);
+  const servicoLoteEquipamento = new ServicoLoteEquipamento(repositorio, journal);
+  const servicoRelatorio = new ServicoRelatorio(repositorio, journal);
+
+  // 5. Interface de Linha de Comando
   const cli = new CLIInterface(
-    authService,
-    orgService,
-    loteService,
-    usuarioService,
-    relatorioService
+    servicoAutenticacao,
+    servicoOrganizacao,
+    servicoLoteEquipamento,
+    servicoUsuario,
+    servicoRelatorio
   );
 
+  // 6. Inicia o Loop do Terminal
   await cli.iniciarLoop();
 }
 
-main();
+bootstrap().catch((erro) => {
+  console.error('\n❌ [FALHA CRÍTICA NA INICIALIZAÇÃO]:', erro.message);
+  process.exit(1);
+});

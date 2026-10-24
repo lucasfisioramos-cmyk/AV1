@@ -1,30 +1,29 @@
 // src/services/ServicoRelatorio.ts
-import * as fs from 'fs';
-import * as path from 'path';
 import { RepositorioArquivo } from '../persistence/RepositorioArquivo.js';
-import { Lote, Organizacao, Equipamento } from '../domain/Entities.js';
-import { StatusRastreamento } from '../domain/Enums.js';
+import { JournalTransacaoService } from '../persistence/JournalTransacao.js';
+import { Lote, Equipamento } from '../domain/Entities.js';
 
 export class ServicoRelatorio {
   private repo: RepositorioArquivo;
-  private diretorioBase: string;
+  private journal: JournalTransacaoService;
 
-  constructor(repo: RepositorioArquivo, diretorioBase: string = './data') {
+  constructor(
+    repo: RepositorioArquivo,
+    journal: JournalTransacaoService
+  ) {
     this.repo = repo;
-    this.diretorioBase = diretorioBase;
+    this.journal = journal;
   }
 
-  /**
-   * Rastreia toda a jornada de um equipamento pelo código de barras ou ID
-   */
-  public rastrearEquipamento(identificador: string): string {
+  public rastrearEquipamento(codigoOuId: string): string {
     const lotes = this.repo.carregarEntidade<Lote[]>('lotes') || [];
     let equipEncontrado: Equipamento | null = null;
     let loteOrigem: Lote | null = null;
 
     for (const l of lotes) {
+      if (!l.equipamentos) continue;
       const eq = l.equipamentos.find(
-        (e) => e.codigoBarrasInterno === identificador || e.id === identificador
+        (e) => e.id === codigoOuId || e.codigoBarrasInterno === codigoOuId
       );
       if (eq) {
         equipEncontrado = eq;
@@ -33,65 +32,47 @@ export class ServicoRelatorio {
       }
     }
 
-    if (!equipEncontrado || !loteOrigem) {
-      return `❌ Equipamento com código/ID "${identificador}" não foi encontrado.`;
+    if (!equipEncontrado) {
+      return `❌ Equipamento '${codigoOuId}' não foi localizado no acervo.`;
     }
 
-    const orgs = this.repo.carregarEntidade<Organizacao[]>('organizacoes') || [];
-    const org = orgs.find((o) => o.id === loteOrigem!.organizacaoId);
+    let saida = `\n================ RASTREABILIDADE DE EQUIPAMENTO ================\n`;
+    saida += `Código de Barras: ${equipEncontrado.codigoBarrasInterno}\n`;
+    saida += `Tipo: ${equipEncontrado.tipo} | Marca/Modelo: ${equipEncontrado.marca} ${equipEncontrado.modelo}\n`;
+    saida += `Ano Fabricação: ${equipEncontrado.anoFabricacao} | Peso: ${equipEncontrado.pesoQuilogramas}kg\n`;
+    saida += `Lote Origem: ${loteOrigem?.id} | Status Atual: ${equipEncontrado.statusRastreamento}\n`;
+    saida += `----------------------------------------------------------------\n`;
+    saida += `HISTÓRICO DE MOVIMENTAÇÕES:\n`;
 
-    let output = `\n======================================================\n`;
-    output += `       RELATÓRIO DE RASTREABILIDADE DE EQUIPAMENTO    \n`;
-    output += `======================================================\n`;
-    output += `Código de Barras: ${equipEncontrado.codigoBarrasInterno}\n`;
-    output += `Tipo:               ${equipEncontrado.tipo}\n`;
-    output += `Marca / Modelo:     ${equipEncontrado.marca} / ${equipEncontrado.modelo}\n`;
-    output += `Estado Físico:      ${equipEncontrado.estadoFisico}\n`;
-    output += `Status Atual:       ${equipEncontrado.statusRastreamento}\n`;
-    output += `------------------------------------------------------\n`;
-    output += `Lote de Origem:     ${loteOrigem.id} (NF: ${loteOrigem.notaFiscal})\n`;
-    output += `Organização:        ${org ? org.razaoSocial : loteOrigem.organizacaoId} (CNPJ: ${org?.cnpj || 'N/A'})\n`;
-    output += `Data de Entrada:    ${new Date(loteOrigem.dataEntrada).toLocaleString()}\n`;
-    output += `------------------------------------------------------\n`;
-    output += `HISTÓRICO DE MOVIMENTAÇÕES:\n`;
-
-    if (equipEncontrado.historicoMovimentacao.length === 0) {
-      output += ` (Nenhuma movimentação registrada até o momento)\n`;
+    if (!equipEncontrado.historicoMovimentacao || equipEncontrado.historicoMovimentacao.length === 0) {
+      saida += ` (Sem movimentações registradas)\n`;
     } else {
-      equipEncontrado.historicoMovimentacao.forEach((m, i) => {
-        output += ` ${i + 1}. [${new Date(m.dataHora).toLocaleString()}] De: ${m.origem} -> Para: ${m.destino}\n`;
-        output += `    Responsável: ${m.responsavel}\n`;
-        if (m.observacao) output += `    Justificativa/Obs: ${m.observacao}\n`;
+      equipEncontrado.historicoMovimentacao.forEach((m, idx) => {
+        saida += ` ${idx + 1}. [${m.dataHora}] ${m.origem} -> ${m.destino} (Resp: ${m.responsavel}) | Obs: ${m.observacao || 'N/A'}\n`;
       });
     }
-    output += `======================================================\n`;
 
-    return output;
+    saida += `================================================================\n`;
+    return saida;
   }
 
-  /**
-   * Consulta os logs de Journal imutáveis
-   */
   public consultarJournal(limite: number = 20): string {
-    const caminhoJournal = path.join(this.diretorioBase, 'journal.log');
-
-    if (!fs.existsSync(caminhoJournal)) {
-      return 'Nenhum registro de journal encontrado.';
-    }
-
-    const linhas = fs.readFileSync(caminhoJournal, 'utf8').trim().split('\n');
-    const ultimasLinhas = linhas.slice(-limite);
-
-    let output = `\n=== ÚLTIMAS ${ultimasLinhas.length} TRANSAÇÕES REGISTRADAS (JOURNAL) ===\n`;
-    ultimasLinhas.forEach((linha: string) => {
-      try {
-        const item = JSON.parse(linha);
-        output += `[${new Date(item.timestamp).toLocaleString()}] OP: ${item.operacao} | Entidade: ${item.entidade} | Resp: ${item.usuarioResponsavel}\n`;
-      } catch {
-        output += `${linha}\n`;
+    try {
+      const registros = this.journal.listar(limite);
+      if (registros.length === 0) {
+        return 'ℹ Journal de auditoria sem registros no momento.';
       }
-    });
 
-    return output;
+      let relatorio = `\n================ JOURNAL DE AUDITORIA (Últimos ${registros.length} Registros) ================\n`;
+      registros.forEach((registro) => {
+        relatorio += `[${registro.timestamp}] | Op: ${registro.operacao} | Entidade: ${registro.entidade} | Resp: ${registro.usuarioResponsavel}\n`;
+      });
+
+      relatorio += `================================================================================\n`;
+      return relatorio;
+    } catch (erro) {
+      const mensagem = erro instanceof Error ? erro.message : String(erro);
+      return `❌ Falha ao ler journal de transações: ${mensagem}`;
+    }
   }
 }

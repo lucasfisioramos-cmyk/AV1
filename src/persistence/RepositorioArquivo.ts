@@ -6,7 +6,10 @@ export class RepositorioArquivo {
   private diretorioBase: string;
   private chaveMestra: string;
 
-  constructor(diretorioBase: string = './data', chaveMestra: string) {
+  constructor(
+    diretorioBase: string,
+    chaveMestra: string
+  ) {
     this.diretorioBase = diretorioBase;
     this.chaveMestra = chaveMestra;
 
@@ -17,21 +20,16 @@ export class RepositorioArquivo {
 
   public salvarEntidade(nomeArquivo: string, dados: any): void {
     const caminhoFinal = path.join(this.diretorioBase, `${nomeArquivo}.json.enc`);
-    const caminhoTemp = path.join(this.diretorioBase, `${nomeArquivo}.${Date.now()}.tmp`);
+    const caminhoTemp = path.join(this.diretorioBase, `${nomeArquivo}_${Date.now()}.tmp`);
 
-    const conteudoJson = JSON.stringify(dados, null, 2);
-    const conteudoCifrado = CriptografiaArquivo.cifrar(conteudoJson, this.chaveMestra);
+    const jsonTexto = JSON.stringify(dados, null, 2);
+    const conteudoCifrado = CriptografiaArquivo.cifrar(jsonTexto, this.chaveMestra);
 
-    // 1. Escreve no arquivo temporário
+    // Escrita Atômica: grava no temporário e renomeia
     fs.writeFileSync(caminhoTemp, conteudoCifrado, 'utf8');
-
-    // 2. Transfere atomicamente
     fs.renameSync(caminhoTemp, caminhoFinal);
   }
 
-  /**
-   * Lê e decifra arquivo de dados
-   */
   public carregarEntidade<T>(nomeArquivo: string): T | null {
     const caminhoFinal = path.join(this.diretorioBase, `${nomeArquivo}.json.enc`);
 
@@ -41,11 +39,16 @@ export class RepositorioArquivo {
 
     try {
       const conteudoCifrado = fs.readFileSync(caminhoFinal, 'utf8');
-      const conteudoTexto = CriptografiaArquivo.decifrar(conteudoCifrado, this.chaveMestra);
-      return JSON.parse(conteudoTexto) as T;
-    } catch (e) {
-      console.error(`Erro ao decifrar/carregar o arquivo ${nomeArquivo}:`, e);
+      const jsonTexto = CriptografiaArquivo.decifrar(conteudoCifrado, this.chaveMestra);
+      return JSON.parse(jsonTexto) as T;
+    } catch (erro) {
+      console.error(`[ERRO LEITURA REPOSITÓRIO]: Falha ao carregar ${nomeArquivo}.json.enc`);
       return null;
     }
+  }
+
+  public listarEntidades<T>(nomeArquivo: string): T[] {
+    const dados = this.carregarEntidade<T[]>(nomeArquivo);
+    return Array.isArray(dados) ? dados : [];
   }
 }
