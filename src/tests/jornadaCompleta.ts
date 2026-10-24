@@ -1,17 +1,14 @@
 import * as fs from 'fs';
-import * as path from 'path';
-import { CriptografiaArquivo } from '../security/CriptografiaArquivo.js';
 import { RepositorioArquivo } from '../persistence/RepositorioArquivo.js';
 import { JournalTransacaoService } from '../persistence/JournalTransacao.js';
+import { ServicoProvisionamento } from '../services/ServicoProvisionamento.js';
 import { ServicoAutenticacao } from '../services/ServicoAutenticacao.js';
 import { ServicoOrganizacao } from '../services/ServicoOrganizacao.js';
 import { ServicoLoteEquipamento } from '../services/ServicoLoteEquipamento.js';
 import { ServicoRelatorio } from '../services/ServicoRelatorio.js';
-import { PapelUsuario, TipoEquipamento, EstadoFisico, StatusRastreamento } from '../domain/Enums.js';
-import { Credencial } from '../domain/Entities.js';
+import { TipoEquipamento, EstadoFisico, StatusRastreamento } from '../domain/Enums.js';
 
 const TEST_DIR = './data_test';
-const CONFIG_FILE = path.join(TEST_DIR, 'config.json.enc');
 
 async function rodarJornadaCompleta() {
   console.log('================================================================');
@@ -23,30 +20,17 @@ async function rodarJornadaCompleta() {
     fs.rmSync(TEST_DIR, { recursive: true, force: true });
   }
 
-  // 1. SIMULAÇÃO DE PROVISIONAMENTO INICIAL
   console.log('1. [PROVISIONAMENTO] Gerando chave mestra e criando administrador...');
-  const chaveMestra = CriptografiaArquivo.gerarChave();
-  fs.mkdirSync(TEST_DIR, { recursive: true });
-  fs.writeFileSync(CONFIG_FILE, JSON.stringify({ chaveMestra, criadoEm: new Date().toISOString() }), 'utf8');
-
-  const journal = new JournalTransacaoService(TEST_DIR);
+  const provisionamento = new ServicoProvisionamento(TEST_DIR);
+  const { chaveMestra } = provisionamento.executarProvisionamento('Senha@123');
+  const journal = new JournalTransacaoService(chaveMestra, TEST_DIR);
   const repo = new RepositorioArquivo(TEST_DIR, chaveMestra);
-
-  const salt = CriptografiaArquivo.gerarSalt();
-  const adminCred: Credencial = {
-    usuario: 'admin_test',
-    hashSenha: CriptografiaArquivo.gerarHashSenha('Senha@123', salt),
-    salt,
-    papel: PapelUsuario.ADMINISTRADOR,
-  };
-  repo.salvarEntidade('credenciais', [adminCred]);
-  journal.registrar({ operacao: 'PROVISIONAMENTO_TESTE', entidade: 'Configuracao', usuarioResponsavel: 'SYSTEM' });
   console.log('   ✔ Provisionamento efetuado com sucesso.\n');
 
   // 2. SIMULAÇÃO DE AUTENTICAÇÃO E SESSÃO
   console.log('2. [AUTENTICAÇÃO] Testando login com SHA-256 e validação de sessão...');
   const authService = new ServicoAutenticacao(repo, journal);
-  const sessao = authService.login('admin_test', 'Senha@123');
+  const sessao = authService.login('admin', 'Senha@123');
 
   if (!sessao || !authService.isSessaoValida(sessao)) {
     throw new Error('Falha no teste de autenticação.');
@@ -118,7 +102,7 @@ async function rodarJornadaCompleta() {
 
   // 8. AUDITORIA E RASTREABILIDADE
   console.log('8. [AUDITORIA] Consultando relatório de rastreabilidade e logs...');
-  const relatorioService = new ServicoRelatorio(repo, TEST_DIR);
+  const relatorioService = new ServicoRelatorio(repo, journal);
   console.log(relatorioService.rastrearEquipamento(equip1.codigoBarrasInterno));
   console.log(relatorioService.consultarJournal(10));
 
@@ -127,7 +111,13 @@ async function rodarJornadaCompleta() {
   console.log('================================================================');
 }
 
-rodarJornadaCompleta().catch((e) => {
-  console.error('❌ Falha nos testes:', e);
-  process.exit(1);
-});
+rodarJornadaCompleta()
+  .catch((e) => {
+    console.error('❌ Falha nos testes:', e);
+    process.exitCode = 1;
+  })
+  .finally(() => {
+    if (fs.existsSync(TEST_DIR)) {
+      fs.rmSync(TEST_DIR, { recursive: true, force: true });
+    }
+  });
