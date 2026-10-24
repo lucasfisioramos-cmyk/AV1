@@ -13,7 +13,7 @@ export interface Sessao {
   usuario: string;
   papel: PapelUsuario;
   criacao: string;
-  expiracao: string;
+  ultimoAcesso: string;
   ativa?: boolean; 
 }
 
